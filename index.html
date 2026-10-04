@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#1769aa">
+<title>מחשבון כיפופי פח – מאגר המפעל</title>
+<style>
+body{font-family:Segoe UI,Arial,sans-serif;background:#eef2f6;margin:0;color:#17202a}
+.wrap{max-width:1050px;margin:24px auto;padding:0 16px}.card{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 2px 12px #0001}
+h1,h2{margin-top:0}.muted{color:#667085}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+label{font-weight:650;font-size:13px}input,select{width:100%;box-sizing:border-box;padding:11px;border:1px solid #cbd5e1;border-radius:8px;font-size:16px}
+button{padding:12px 18px;border:0;border-radius:9px;background:#1769aa;color:white;font-weight:700;font-size:15px;cursor:pointer}
+button.alt{background:#667085}.actions{display:flex;gap:10px;margin-top:16px}.big{font-size:21px;font-weight:750;line-height:1.65;white-space:pre-line}
+.good{border-right:6px solid #159447}.warn{border-right:6px solid #e58b16}.bad{border-right:6px solid #c43d3d}
+table{width:100%;border-collapse:collapse;direction:ltr}th,td{padding:9px;border-bottom:1px solid #e5e7eb;text-align:center}th{background:#f8fafc}
+.best{background:#eaf8ef}.small{font-size:12px;color:#667085}.hide{display:none}
+@media(max-width:800px){
+.grid{grid-template-columns:1fr}
+.wrap{margin:0 auto;padding:10px}
+.card{border-radius:12px;padding:16px;margin-bottom:12px}
+h1{font-size:23px}h2{font-size:19px}
+input,select,button{min-height:48px;font-size:16px}
+.actions{display:grid;grid-template-columns:1fr}
+.big{font-size:18px}
+table{font-size:12px}
+}
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+
+</style></head>
+<body><div class="wrap">
+<div class="card">
+<h1>מחשבון כיפופי פח – לפי מאגר המפעל</h1>
+<div class="muted">בחר חומר, עובי ורדיוס כיפוף רצוי. התוכנה מחפשת קודם התאמה אמפירית במאגר שלכם ומחזירה V, רדיוס רשום ו-BD. היא לא ממציאה ערך כאשר אין התאמה.</div>
+</div>
+
+<div class="card">
+<h2>1. מציאת נתוני כיפוף</h2>
+<div class="grid">
+<div><label>חומר גלם</label><select id="mat"></select></div>
+<div><label>עובי פח (מ"מ)</label><select id="th"></select></div>
+<div><label>רדיוס כיפוף רצוי R (מ"מ)</label><select id="rad"></select></div>
+<div><label>זווית</label><select id="ang"><option value="90">90° / רגיל</option></select></div>
+</div>
+<div class="actions"><button onclick="lookup()">מצא נתונים מהמאגר</button><button class="alt" onclick="resetAll()">איפוס</button></div>
+</div>
+
+<div id="answer" class="card"><div id="answerText" class="big">בחר נתונים ולחץ "מצא נתונים מהמאגר".</div></div>
+
+<div id="flatCard" class="card hide">
+<h2>2. חישוב אורך פריסה</h2>
+<div class="grid">
+<div><label>סכום מידות חיצוניות (מ"מ)</label><input id="total" inputmode="decimal"></div>
+<div><label>מספר כיפופים זהים</label><input id="count" type="number" min="1" value="1"></div>
+</div>
+<div class="actions"><button onclick="flatCalc()">חשב פריסה</button></div>
+<div id="flatResult" class="big" style="margin-top:12px"></div>
+</div>
+
+
+
+<div class="card">
+<h2>כל ההתאמות שנמצאו</h2>
+<div style="overflow:auto"><table><thead><tr><th>Material</th><th>T</th><th>V</th><th>R</th><th>BD</th><th>Note</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="small">אם קיימות כמה רשומות לאותו חומר/עובי/R, הן מוצגות כולן. השורה הראשונה היא ההתאמה המועדפת לפי המאגר.</div>
+</div>
+<div class="card">
+<h2>Reverse – מציאת BD מנתוני חלק קיים</h2>
+<div class="muted">הזן את אורך הפריסה לפני כיפוף, סכום המידות החיצוניות של החלק לאחר הכיפוף ומספר הכיפופים. התוכנה תחשב את ה-BD בפועל לכל כיפוף ותשווה אותו למאגר לפי חומר, עובי ורדיוס.</div>
+<div class="grid">
+<div><label>חומר גלם</label><select id="revMat"></select></div>
+<div><label>עובי פח (מ"מ)</label><select id="revTh"></select></div>
+<div><label>רדיוס כיפוף R (מ"מ)</label><select id="revRad"></select></div>
+<div><label>מספר כיפופים</label><input id="revCount" type="number" min="1" value="1"></div>
+<div><label>אורך פריסה קיים (מ"מ)</label><input id="revFlat" inputmode="decimal"></div>
+<div><label>סכום מידות חיצוניות אחרי כיפוף (מ"מ)</label><input id="revOutside" inputmode="decimal"></div>
+</div>
+<div class="actions"><button onclick="reverseLookup()">חשב והשווה למאגר</button></div>
+<div id="revResult" class="big" style="margin-top:12px">—</div>
+<div id="revTableWrap" class="hide" style="overflow:auto;margin-top:12px">
+<table><thead><tr><th>Material</th><th>T</th><th>V</th><th>R</th><th>BD database</th><th>Δ from measured</th><th>Note</th></tr></thead><tbody id="revRows"></tbody></table>
+</div>
+</div>
+
+</div>
+<script>
+const DATA = [
+["Steel",1.5,25.0,3.0,5.6,""],
+["Stainless",5.0,25.0,5.0,7.2,""],
+["Steel",2.0,50.0,10.0,15.5,""],
+["Stainless",1.2,35.0,3.0,8.9,""],
+["Aluminum",1.2,35.0,3.0,9.0,""],
+["Steel",3.0,50.0,10.0,8.9,""],
+["Steel",4.0,50.0,10.0,10.0,""],
+["Steel",6.0,50.0,10.0,13.6,""],
+["Stainless",5.0,35.0,3.0,9.8,""],
+["Steel",2.0,25.0,3.0,4.8,""],
+["Steel",8.0,50.0,3.0,14.4,""],
+["Aluminum",3.0,12.0,0.8,4.4,""],
+["Stainless",2.0,16.0,0.8,3.8,""],
+["Steel",3.0,25.0,3.0,5.8,""],
+["Aluminum",5.0,20.0,3.0,8.6,""],
+["Stainless",8.0,45.0,10.0,14.6,""],
+["Stainless",3.0,14.0,3.0,5.1,""],
+["Stainless",3.0,25.0,3.0,5.5,""],
+["Aluminum",5.0,25.0,3.0,8.2,""],
+["Steel",3.0,35.0,3.0,6.0,""],
+["Steel",3.0,35.0,10.0,8.4,""],
+["Steel",2.0,25.0,8.0,5.7,""],
+["Steel",4.0,35.0,3.0,7.7,""],
+["Aluminum",3.0,12.0,3.0,5.2,""],
+["Steel",6.0,60.0,3.0,12.6,""],
+["Steel",8.0,60.0,15.0,18.0,""],
+["Steel",6.0,35.0,10.0,13.0,""],
+["Steel",2.0,35.0,10.0,7.3,""],
+["Steel",6.0,35.0,5.0,11.0,""],
+["Steel",2.0,35.0,15.5,9.4,""],
+["Steel",2.0,50.0,15.5,9.4,""],
+["Steel",4.0,25.0,5.0,8.0,""],
+["Stainless",4.0,60.0,0.8,10.4,""],
+["Aluminum",1.5,12.0,2.0,2.68,""],
+["Stainless",8.0,35.0,3.0,13.3,""],
+["Steel",5.0,25.0,0.8,8.2,""],
+["Steel",5.0,35.0,0.8,8.9,""],
+["Nichrome",0.3,4.0,0.5,0.75,""],
+["Stainless",3.0,12.0,0.8,5.0,""],
+["Stainless",3.0,50.0,16.0,11.0,""],
+["Stainless",1.5,25.0,5.0,4.3,""],
+["Aluminum",2.5,10.0,0.8,4.1,""],
+["Aluminum",2.5,8.0,0.8,4.0,""],
+["Aluminum",2.0,8.0,0.8,3.1,""],
+["Steel",6.0,35.0,8.5,11.9,"ST52"],
+["Steel",6.0,25.0,5.0,10.0,"ST52"],
+["Steel",4.0,20.0,0.8,6.7,""],
+["Stainless",2.0,25.0,3.0,3.8,"flat die"],
+["Steel",4.0,25.0,3.0,7.3,""],
+["Steel",5.0,20.0,0.8,7.8,""],
+["Steel",5.0,20.0,3.0,8.0,""],
+["Steel",4.0,16.0,0.8,6.4,""],
+["Steel",10.0,70.0,20.0,21.9,"flat die"],
+["Steel",6.0,25.0,3.0,9.6,""],
+["Steel",10.0,40.0,5.0,16.3,""],
+["Steel",8.0,35.0,3.0,13.5,""],
+["Stainless",5.0,20.0,0.8,8.2,""],
+["Stainless",4.0,20.0,0.8,6.9,""],
+["Stainless",2.5,14.0,0.8,4.6,""],
+["Steel",3.0,25.0,5.0,6.4,""],
+["Steel",2.0,25.0,5.0,4.9,""],
+["Aluminum",4.0,25.0,3.0,6.7,""],
+["Aluminum",4.0,25.0,0.8,6.6,""],
+["Aluminum",4.0,20.0,0.8,6.4,""],
+["Steel",5.0,35.0,5.0,9.5,""],
+["Aluminum",5.0,25.0,0.8,7.9,""],
+["Steel",3.0,22.0,0.8,5.4,"60 deg tooling"],
+["Aluminum",1.5,16.0,3.0,3.3,""],
+["Aluminum",2.0,16.0,3.0,4.0,""],
+["Nichrome",0.9,8.0,0.5,1.7,""],
+["Aluminum",4.0,16.0,0.5,6.5,"60 deg tooling"],
+["Steel",5.0,25.0,3.0,8.5,""],
+["Aluminum",6.0,25.0,5.0,10.2,""],
+["Aluminum",6.0,25.0,4.0,9.8,""],
+["Stainless",6.0,35.0,3.0,11.2,""],
+["Steel",10.0,50.0,5.0,16.2,""],
+["Aluminum",4.0,25.0,5.0,8.0,""],
+["Steel",2.0,50.0,15.0,9.2,""],
+["Steel",1.2,6.0,0.8,2.0,""],
+["Aluminum",5.0,25.0,5.0,9.0,""],
+["Aluminum",2.0,10.0,0.8,3.2,""],
+["Aluminum",3.0,16.0,3.0,5.6,""],
+["Steel",5.0,20.0,3.0,8.2,""],
+["Stainless",5.0,25.0,5.0,9.2,""],
+["Stainless",4.0,25.0,5.0,7.6,""],
+["Steel",4.0,35.0,10.0,9.8,""],
+["Steel",5.0,35.0,10.0,11.0,""],
+["Stainless",0.8,14.0,5.0,2.9,""],
+["Aluminum",1.0,35.0,10.0,5.8,""],
+["Aluminum",1.5,35.0,10.0,6.7,""],
+["Aluminum",2.0,35.0,10.0,7.0,""],
+["Aluminum",2.5,35.0,10.0,7.6,""],
+["Aluminum",3.0,35.0,10.0,8.0,""],
+["Steel",4.0,35.0,0.8,7.5,""],
+["Steel",3.0,35.0,0.8,6.1,""],
+["Steel",6.0,35.0,0.8,10.4,""],
+["Aluminum",6.0,35.0,3.0,9.8,""],
+["Stainless",1.5,12.0,0.5,3.1,""],
+["Steel",2.0,10.0,0.5,3.0,"60 deg tooling"],
+["Steel",8.0,45.0,3.0,13.6,""],
+["Steel",1.2,8.0,2.5,2.5,""],
+["Steel",1.2,8.0,3.0,2.8,""],
+["Aluminum",6.0,25.0,0.8,9.7,""],
+["Steel",1.0,4.0,0.5,1.6,""],
+["Stainless",1.0,4.0,0.5,1.7,""],
+["Aluminum",10.0,35.0,3.0,14.7,""],
+["Aluminum",10.0,50.0,10.0,17.1,""],
+["Stainless",10.0,45.0,6.0,16.0,""],
+["Stainless",3.0,14.0,2.0,5.1,""],
+["Stainless",3.0,16.0,2.0,5.2,""],
+["Aluminum",2.0,12.0,2.0,3.6,""],
+["Steel",2.0,12.0,2.0,3.53,""],
+["Steel",2.0,12.0,2.0,3.7,""],
+["Aluminum",6.0,25.0,5.0,11.0,"deep bend / special"],
+["Aluminum",6.0,35.0,11.0,13.4,""],
+["Steel",3.0,20.0,5.0,6.2,""],
+["Steel",8.0,35.0,4.0,13.0,""],
+["Aluminum",3.0,25.0,5.0,6.4,""],
+["Aluminum",3.0,50.0,18.0,12.9,""],
+["Aluminum",4.0,18.0,2.0,6.5,""],
+["Aluminum",8.0,50.0,8.0,14.8,""],
+["Stainless",2.5,16.0,3.0,4.7,""],
+["Steel",8.0,55.0,10.0,13.6,"flat die"],
+["Steel",10.0,50.0,3.0,17.0,""],
+["Aluminum",3.0,12.0,0.8,4.6,""],
+["Steel",2.5,8.0,0.8,3.45,""],
+["Steel",3.0,25.0,3.0,6.1,"ST52"],
+["Aluminum",2.0,35.0,8.0,6.0,""],
+["Stainless",4.0,20.0,3.0,7.0,""],
+["Aluminum",0.8,25.0,10.0,5.6,""],
+["Steel",6.0,35.0,8.0,11.8,""],
+["Stainless",10.0,50.0,5.0,15.9,""],
+["Steel",2.0,18.0,5.0,4.7,""],
+["Stainless",2.0,12.0,3.0,3.9,""],
+["Stainless",2.0,14.0,3.0,4.1,""],
+["Stainless",3.0,14.0,3.0,5.3,""],
+["Stainless",3.0,14.0,0.8,4.9,""],
+["Steel",5.0,35.0,3.0,8.8,""],
+["Steel",6.0,35.0,5.0,10.1,""],
+["Aluminum",5.0,35.0,5.0,9.2,""],
+["Aluminum",4.0,25.0,4.0,7.3,"R4 / punch 8 noted"],
+["Aluminum",4.0,20.0,4.0,7.1,""],
+["Aluminum",1.6,12.0,3.0,3.2,""],
+["Aluminum",2.0,12.0,3.0,3.9,""],
+["Steel",6.0,65.0,25.0,19.0,"ST52 / special tool"],
+["Steel",5.0,25.0,5.0,9.1,""],
+["Aluminum",1.5,6.0,0.5,2.3,""],
+["Aluminum",2.5,14.0,3.0,4.3,""],
+["Stainless",3.0,25.0,0.8,6.1,""],
+["Steel",2.5,16.0,0.8,4.3,""],
+["Stainless",3.0,16.0,3.0,5.4,""],
+["Aluminum",3.0,20.0,5.0,6.6,""],
+["Aluminum",6.0,35.0,5.0,10.7,""]
+];
+const NAMES={Steel:"ברזל",Stainless:"נירוסטה",Aluminum:"אלומיניום",Nichrome:"ניכרום"};
+let selected=null;
+const $=id=>document.getElementById(id);
+const uniq=a=>[...new Set(a)].sort((a,b)=>typeof a==="number"?a-b:String(a).localeCompare(String(b)));
+function opt(sel, vals, labeler=x=>x){sel.innerHTML=""; vals.forEach(v=>{let o=document.createElement("option");o.value=v;o.textContent=labeler(v);sel.appendChild(o)})}
+function init(){
+ let mats=uniq(DATA.map(x=>x[0])); opt($("mat"),mats,x=>NAMES[x]||x); refreshThickness();
+ $("mat").onchange=refreshThickness; $("th").onchange=refreshRadius;
+ initReverse();
+}
+function refreshThickness(){
+ let m=$("mat").value; let vals=uniq(DATA.filter(x=>x[0]===m).map(x=>x[1])); opt($("th"),vals,x=>x+" מ״מ"); refreshRadius();
+}
+function refreshRadius(){
+ let m=$("mat").value,t=parseFloat($("th").value);
+ let vals=uniq(DATA.filter(x=>x[0]===m&&x[1]===t).map(x=>x[3])); opt($("rad"),vals,x=>"R"+x);
+}
+function renderRows(rows){
+ let tb=$("rows");tb.innerHTML="";
+ rows.forEach((x,i)=>{let tr=document.createElement("tr");if(i===0)tr.className="best";
+ tr.innerHTML=`<td>${NAMES[x[0]]||x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td><td><b>${x[4]}</b></td><td>${x[5]||""}</td>`;tb.appendChild(tr)});
+}
+function lookup(){
+ let m=$("mat").value,t=parseFloat($("th").value),r=parseFloat($("rad").value);
+ let exact=DATA.filter(x=>x[0]===m&&x[1]===t&&x[3]===r);
+ exact.sort((a,b)=>a[2]-b[2]||a[4]-b[4]); renderRows(exact);
+ let card=$("answer"),out=$("answerText");
+ if(!exact.length){card.className="card bad";out.textContent="לא נמצאה התאמה במאגר.";selected=null;$("flatCard").className="card hide";return;}
+ selected=exact[0];
+ let bds=uniq(exact.map(x=>x[4])), vs=uniq(exact.map(x=>x[2]));
+ card.className= exact.length===1 ? "card good":"card warn";
+ let msg=`חומר: ${NAMES[m]||m}\nעובי: ${t} מ״מ | רדיוס: R${r}\n`;
+ if(exact.length===1) msg+=`פריזמה מומלצת מהמאגר: V${selected[2]}\nBD: ${selected[4]} מ״מ`;
+ else msg+=`נמצאו ${exact.length} אפשרויות במאגר.\nV קיימים: ${vs.join(", ")}\nBD קיימים: ${bds.join(", ")} מ״מ\n\nלצורך חישוב נבחרה הרשומה הראשונה: V${selected[2]}, BD ${selected[4]}`;
+ if(selected[5]) msg+=`\nהערה: ${selected[5]}`;
+ out.textContent=msg;$("flatCard").className="card";
+}
+function n(id){return parseFloat($(id).value.replace(",","."))}
+function flatCalc(){
+ if(!selected){$("flatResult").textContent="קודם יש לבחור נתון מהמאגר.";return}
+ let total=n("total"),c=parseInt($("count").value);
+ if(Number.isNaN(total)||Number.isNaN(c)||c<1){$("flatResult").textContent="יש להזין מידות תקינות.";return}
+ let d=c*selected[4],flat=total-d;
+ $("flatResult").textContent=`BD = ${selected[4]} מ״מ × ${c} כיפופים = ${d.toFixed(3)} מ״מ\nאורך פריסה = ${total.toFixed(3)} − ${d.toFixed(3)} = ${flat.toFixed(3)} מ״מ`;
+}
+
+function initReverse(){
+ let mats=uniq(DATA.map(x=>x[0])); opt($("revMat"),mats,x=>NAMES[x]||x);
+ refreshRevThickness();
+ $("revMat").onchange=refreshRevThickness;
+ $("revTh").onchange=refreshRevRadius;
+}
+function refreshRevThickness(){
+ let m=$("revMat").value;
+ let vals=uniq(DATA.filter(x=>x[0]===m).map(x=>x[1]));
+ opt($("revTh"),vals,x=>x+" מ״מ");
+ refreshRevRadius();
+}
+function refreshRevRadius(){
+ let m=$("revMat").value,t=parseFloat($("revTh").value);
+ let vals=uniq(DATA.filter(x=>x[0]===m&&x[1]===t).map(x=>x[3]));
+ opt($("revRad"),vals,x=>"R"+x);
+}
+function revNum(id){return parseFloat($(id).value.replace(",","."));}
+function reverseLookup(){
+ const mat=$("revMat").value, T=parseFloat($("revTh").value), R=parseFloat($("revRad").value);
+ const count=parseInt($("revCount").value), flat=revNum("revFlat"), outside=revNum("revOutside");
+ const out=$("revResult"), wrap=$("revTableWrap"), tb=$("revRows");
+ if([T,R,count,flat,outside].some(Number.isNaN)||count<1){
+   out.textContent="יש להזין אורך פריסה, סכום מידות חיצוניות ומספר כיפופים תקינים.";
+   wrap.className="hide"; return;
+ }
+ const totalDeduction=outside-flat;
+ const measuredBD=totalDeduction/count;
+ if(totalDeduction<=0){
+   out.textContent="הנתונים אינם הגיוניים לשיטת BD: סכום המידות החיצוניות צריך להיות גדול מאורך הפריסה.";
+   wrap.className="hide"; return;
+ }
+ let rows=DATA.filter(x=>x[0]===mat&&x[1]===T&&x[3]===R)
+              .map(x=>({x,delta:Math.abs(x[4]-measuredBD)}))
+              .sort((a,b)=>a.delta-b.delta);
+ let msg=`הפחתה כוללת שנמדדה: ${outside.toFixed(3)} − ${flat.toFixed(3)} = ${totalDeduction.toFixed(3)} מ״מ\n`;
+ msg+=`BD ניסויי לכל כיפוף: ${totalDeduction.toFixed(3)} ÷ ${count} = ${measuredBD.toFixed(3)} מ״מ`;
+ if(rows.length){
+   const b=rows[0];
+   msg+=`\n\nההתאמה הקרובה ביותר במאגר:\nV${b.x[2]} | R${b.x[3]} | BD ${b.x[4]} מ״מ\nסטייה מהניסוי: ${b.delta.toFixed(3)} מ״מ לכיפוף`;
+ } else {
+   msg+=`\n\nאין במאגר רשומה לאותו חומר + עובי + רדיוס. ה-BD הניסויי עדיין מחושב למעלה.`;
+ }
+ out.textContent=msg;
+ tb.innerHTML="";
+ rows.forEach((o,i)=>{
+   let tr=document.createElement("tr"); if(i===0)tr.className="best";
+   tr.innerHTML=`<td>${NAMES[o.x[0]]||o.x[0]}</td><td>${o.x[1]}</td><td>${o.x[2]}</td><td>${o.x[3]}</td><td><b>${o.x[4]}</b></td><td>${o.delta.toFixed(3)}</td><td>${o.x[5]||""}</td>`;
+   tb.appendChild(tr);
+ });
+ wrap.className=rows.length?"":"hide";
+}
+
+function resetAll(){selected=null;init();$("answer").className="card";$("answerText").textContent='בחר נתונים ולחץ "מצא נתונים מהמאגר".';$("rows").innerHTML="";$("flatCard").className="card hide";}
+init();
+</script></body></html>
